@@ -1,517 +1,526 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { 
-  Bell, Plus, Trash2, ExternalLink, RefreshCw, 
-  Building2, Settings, ChevronRight, LayoutDashboard,
-  Rss, Database, AlertCircle, Info, Share2, Sparkles,
-  Search, Filter, ListFilter, CheckCircle
-} from 'lucide-react';
-
-// รายชื่อตั้งต้น 17 เพจ (รวมลิงก์ทั้งหมดที่คุณหามาได้!)
-const defaultPages = [
-  { id: '1', name: 'ตำรวจภูธรภาค 5', url: 'https://www.facebook.com/Police5Thailand/', rssUrl: 'https://rss.app/feeds/9NDB0gVuPGMQkXUF.xml', type: 'Police', color: 'bg-red-100 text-red-700' },
-  { id: '2', name: 'เทศบาลนครเชียงใหม่', url: 'https://www.facebook.com/cmmayor', rssUrl: 'https://rss.app/feeds/BDsDerwS4BhL0ExL.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
-  { id: '3', name: 'ประชาสัมพันธ์เชียงใหม่', url: 'https://www.facebook.com/chiangmaipr', rssUrl: 'https://rss.app/feeds/ZqCJu7HKiR7jas3R.xml', type: 'PR', color: 'bg-green-100 text-green-700' },
-  // อัปเดตลิงก์ RSS ของคณะแพทยศาสตร์ มช. ที่ถูกต้องแล้ว
-  { id: '4', name: 'คณะแพทยศาสตร์ มช.', url: 'https://www.facebook.com/medcmuth', rssUrl: 'https://rss.app/feeds/INGRSaq39enCJvxF.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
-  { id: '5', name: 'สวท.เชียงใหม่', url: 'https://www.facebook.com/chiangmairadiothailand', rssUrl: 'https://rss.app/feeds/3N0vcMBX7RGIF4Zg.xml', type: 'PR', color: 'bg-green-100 text-green-700' },
-  { id: '6', name: 'อบจ.เชียงใหม่', url: 'https://www.facebook.com/cmpao888', rssUrl: 'https://rss.app/feeds/e9pwhxM6rcb1rIjO.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
-  { id: '7', name: 'สปข. 3 เชียงใหม่', url: 'https://www.facebook.com/PRDChiangMai', rssUrl: 'https://rss.app/feeds/MlZ6fjDnqWBBk70A.xml', type: 'PR', color: 'bg-green-100 text-green-700' },
-  { id: '8', name: 'สำนักศิลปากรที่ 7', url: 'https://www.facebook.com/finearts7chiangmai', rssUrl: 'https://rss.app/feeds/VzDXL8wh9CF1NIQD.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
-  { id: '9', name: 'ศูนย์ส่งเสริมอุตสาหกรรมฯ', url: 'https://www.facebook.com/JICChiangMai', rssUrl: 'https://rss.app/feeds/HMSaKJsoJQDZTVEY.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
-  { id: '10', name: 'สำนักงานขนส่งเชียงใหม่', url: 'https://www.facebook.com/profile.php?id=100064666933216', rssUrl: 'https://rss.app/feeds/XbBpNpdy2abueUo0.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
-  { id: '11', name: 'กลุ่มงานจราจร เชียงใหม่', url: 'https://www.facebook.com/tpdchiangmai221', rssUrl: 'https://rss.app/feeds/yxTX1YfXaoDAqldY.xml', type: 'Police', color: 'bg-red-100 text-red-700' },
-  // เซ็ตเพจใหม่ 6 หน่วยงานที่ดึงมาจากรูปภาพของคุณ!
-  { id: '12', name: 'กองบิน 41 เชียงใหม่', url: 'https://www.facebook.com/Wing41', rssUrl: 'https://rss.app/feeds/akPMfJtCeBXla8Ik.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
-  { id: '13', name: 'ตม. เชียงใหม่', url: 'https://www.facebook.com/ChiangmaiImmigration', rssUrl: 'https://rss.app/feeds/esEH5XNvkhQrLaBV.xml', type: 'Police', color: 'bg-red-100 text-red-700' },
-  { id: '14', name: 'สภ.เมืองเชียงใหม่', url: 'https://www.facebook.com/MuangChiangmaiPolice', rssUrl: 'https://rss.app/feeds/tMAdWYbsDeD8jdZq.xml', type: 'Police', color: 'bg-red-100 text-red-700' },
-  { id: '15', name: 'ศูนย์อุตุนิยมวิทยาภาคเหนือ', url: 'https://www.facebook.com/NorthernMeteorologicalCenter', rssUrl: 'https://rss.app/feeds/Nrkkg0BODlkm6IZE.xml', type: 'PR', color: 'bg-green-100 text-green-700' },
-  { id: '16', name: 'ปภ. เชียงใหม่', url: 'https://www.facebook.com/DDPMChiangmai', rssUrl: 'https://rss.app/feeds/g6iKtFW8PH3UvRgm.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
-  { id: '17', name: 'ท่าอากาศยานเชียงใหม่', url: 'https://www.facebook.com/ChiangmaiAirport', rssUrl: 'https://rss.app/feeds/fUY6EBMuwWUfXNel.xml', type: 'PR', color: 'bg-green-100 text-green-700' }
-];
-
-const App = () => {
-  // บังคับสลับไปใช้คลังข้อมูล V5 เพื่ออัปเดตลิงก์คณะแพทย์ที่ถูกต้อง
-  const [pages, setPages] = useState(() => {
-    const savedPages = localStorage.getItem('cmNewsPagesV5');
-    if (savedPages) {
-      try { return JSON.parse(savedPages); } catch (e) {}
-    }
-    return defaultPages;
-  });
-
-  const [posts, setPosts] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('All');
-  const [selectedPageId, setSelectedPageId] = useState(null);
-  const [newPage, setNewPage] = useState({ name: '', url: '', rssUrl: '', type: 'General' });
-
-  // เพิ่ม State สำหรับจัดการสถานะ "อ่านแล้ว" และบันทึกลง LocalStorage
-  const [readPosts, setReadPosts] = useState(() => {
-    const saved = localStorage.getItem('cmNewsReadPosts');
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  // บันทึกข้อมูลกลับไปที่ LocalStorage ชื่อ V5
-  useEffect(() => {
-    localStorage.setItem('cmNewsPagesV5', JSON.stringify(pages));
-    // เคลียร์เศษซากเวอร์ชันเก่าทั้งหมดทิ้ง
-    localStorage.removeItem('cmNewsPages'); 
-    localStorage.removeItem('cmNewsPagesV2'); 
-    localStorage.removeItem('cmNewsPagesV3'); 
-    localStorage.removeItem('cmNewsPagesV4'); 
-  }, [pages]);
-
-  // บันทึกสถานะการอ่าน
-  useEffect(() => {
-    localStorage.setItem('cmNewsReadPosts', JSON.stringify(readPosts));
-  }, [readPosts]);
-
-  // ฟังก์ชันสลับสถานะอ่านแล้ว/ยังไม่อ่าน
-  const toggleReadStatus = (postId) => {
-    setReadPosts(prev => 
-      prev.includes(postId) 
-        ? prev.filter(id => id !== postId)
-        : [...prev, postId]
-    );
-  };
-
-  const filteredPages = useMemo(() => {
-    return pages.filter(p => 
-      p.name.toLowerCase().includes(searchTerm.toLowerCase()) && 
-      (filterType === 'All' || p.type === filterType)
-    );
-  }, [pages, searchTerm, filterType]);
-
-  const parseXmlItems = (xmlText, page) => {
-    try {
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-      const items = Array.from(xmlDoc.querySelectorAll("item"));
-      if (items.length === 0) return null;
-
-      return items.slice(0, 10).map(item => {
-        const title = item.querySelector("title")?.textContent || "";
-        const link = item.querySelector("link")?.textContent || page.url;
-        const description = item.querySelector("description")?.textContent || "";
-        const pubDate = item.querySelector("pubDate")?.textContent;
-        
-        let thumbnail = item.querySelector("enclosure")?.getAttribute("url") || 
-                        item.getElementsByTagNameNS("*", "content")?.[0]?.getAttribute("url");
-        
-        if (!thumbnail && description) {
-          const imgMatch = description.match(/<img[^>]+src="([^">]+)"/);
-          if (imgMatch) thumbnail = imgMatch[1];
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HUB ข่าวราชการเชียงใหม่</title>
+    <!-- ใช้งาน Tailwind CSS ผ่าน CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- ใช้งาน Icon จาก Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- กำหนด Font ภาษาไทย -->
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .line-clamp-5 {
+            display: -webkit-box;
+            -webkit-line-clamp: 5;
+            -webkit-box-orient: vertical;  
+            overflow: hidden;
         }
-        
-        // จัดการขึ้นบรรทัดใหม่และเนื้อหาให้อ่านง่าย
-        let htmlContent = description;
-        htmlContent = htmlContent.replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n\n');
-        let cleanContent = htmlContent.replace(/<[^>]+>/g, '').trim();
-        cleanContent = cleanContent.replace(/\n{3,}/g, '\n\n');
-        
-        let fullText = cleanContent.length > title.length ? cleanContent : title;
-        const displayContent = fullText.length > 1000 ? fullText.substring(0, 1000) + '...' : fullText;
-        
-        const parsedDate = pubDate ? new Date(pubDate) : new Date();
-        const displayTime = parsedDate.toLocaleDateString('th-TH', { 
-          year: 'numeric', month: 'short', day: 'numeric', 
-          hour: '2-digit', minute: '2-digit' 
-        }) + ' น.';
-        
-        return {
-          id: item.querySelector("guid")?.textContent || link + Math.random(),
-          source: page.name,
-          sourceUrl: link,
-          type: page.type,
-          content: displayContent,
-          image: thumbnail || 'https://images.unsplash.com/photo-1590402444723-6447816f1c7d?auto=format&fit=crop&q=80&w=800',
-          time: displayTime,
-          timestamp: parsedDate.getTime(),
-          isLive: true
-        };
-      });
-    } catch(e) {
-      return null;
-    }
-  };
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
 
-  const fetchNewsData = useCallback(async () => {
-    setIsLoading(true);
-    
-    const fetchPromises = pages.map(async (page) => {
-      if (!page.rssUrl) return [];
-      
-      const timestampedUrl = page.rssUrl + (page.rssUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
-      
-      try {
-        const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(timestampedUrl)}`);
-        if (!res.ok) throw new Error('rss2json failed');
-        const data = await res.json();
-        
-        if (data.status === 'ok' && data.items && data.items.length > 0) {
-          return data.items.slice(0, 10).map(item => {
-            const parsedDate = item.pubDate ? new Date(item.pubDate) : new Date();
-            const displayTime = parsedDate.toLocaleDateString('th-TH', { 
-              year: 'numeric', month: 'short', day: 'numeric', 
-              hour: '2-digit', minute: '2-digit' 
-            }) + ' น.';
-
-            let thumb = item.thumbnail || item.enclosure?.link;
-            if (!thumb && item.description) {
-              const imgMatch = item.description.match(/<img[^>]+src="([^">]+)"/);
-              if (imgMatch) thumb = imgMatch[1];
-            }
-
-            let htmlContent = item.description || item.content || "";
-            htmlContent = htmlContent.replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n\n');
-            let cleanContent = htmlContent.replace(/<[^>]+>/g, '').trim();
-            cleanContent = cleanContent.replace(/\n{3,}/g, '\n\n');
-            
-            const title = item.title || "";
-            let fullText = cleanContent.length > title.length ? cleanContent : title;
-            const content = fullText.length > 1000 ? fullText.substring(0, 1000) + '...' : fullText;
-
-            return {
-              id: item.guid || item.link,
-              source: page.name,
-              sourceUrl: item.link,
-              type: page.type,
-              content: content,
-              image: thumb || 'https://images.unsplash.com/photo-1590402444723-6447816f1c7d?auto=format&fit=crop&q=80&w=800',
-              time: displayTime,
-              timestamp: parsedDate.getTime(),
-              isLive: true
-            };
-          });
-        }
-      } catch (e) {
-        try {
-          const corsRes = await fetch(`https://corsproxy.io/?${encodeURIComponent(timestampedUrl)}`);
-          if (corsRes.ok) {
-            const xmlText = await corsRes.text();
-            const parsed = parseXmlItems(xmlText, page);
-            if (parsed) return parsed;
-          }
-        } catch (err2) {
-          try {
-            const proxyRes = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(timestampedUrl)}`);
-            if (proxyRes.ok) {
-              const proxyData = await proxyRes.json();
-              const parsed = parseXmlItems(proxyData.contents, page);
-              if (parsed) return parsed;
-            }
-          } catch (err3) {
-            console.warn(`Fetch failed for ${page.name}`);
-          }
-        }
-      }
-      return [];
-    });
-
-    try {
-      const results = await Promise.all(fetchPromises);
-      const allPosts = results.flat();
-      
-      // --- ระบบยุบรวมข่าวซ้ำ (Deduplication) ---
-      const mergedPostsMap = new Map();
-
-      allPosts.forEach(post => {
-        // สร้าง Key สำหรับตรวจสอบข่าวซ้ำ โดยใช้ข้อความ 60 ตัวอักษรแรก (ตัดช่องว่างออกทั้งหมด)
-        const matchText = (post.content || '').replace(/\s+/g, '').substring(0, 60);
-        // ถ้าข้อความสั้นเกินไปให้ใช้ ID ป้องกันการยุบรวมมั่ว
-        const key = matchText.length > 20 ? matchText : post.id;
-
-        if (mergedPostsMap.has(key)) {
-          // ถ้ามีข่าวนี้อยู่แล้ว ให้นำชื่อเพจไปเพิ่มในรายชื่อ "แชร์โดย (sharedBy)"
-          const existingPost = mergedPostsMap.get(key);
-          existingPost.sharedBy = existingPost.sharedBy || [];
-          
-          if (existingPost.source !== post.source && !existingPost.sharedBy.some(s => s.name === post.source)) {
-            existingPost.sharedBy.push({ name: post.source, url: post.sourceUrl });
-          }
-          
-          // อัปเดตเวลาให้เป็นเวลาล่าสุดเสมอ
-          if (post.timestamp > existingPost.timestamp) {
-             existingPost.timestamp = post.timestamp;
-             existingPost.time = post.time;
-          }
-        } else {
-          // ถ้ายังไม่มีข่าวนี้ ให้สร้างใหม่และเตรียม array ว่างไว้รอคนมาแชร์
-          mergedPostsMap.set(key, { ...post, sharedBy: [] });
-        }
-      });
-
-      // นำข่าวที่ยุบรวมแล้วมาแปลงกลับเป็น Array
-      const uniquePosts = Array.from(mergedPostsMap.values());
-      
-      // เรียงลำดับตามเวลาใหม่สุดไปเก่าสุด
-      const sortedPosts = uniquePosts.sort((a, b) => b.timestamp - a.timestamp);
-      setPosts(sortedPosts);
-    } catch (err) {
-      console.error("Critical Fetch Error:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [pages]);
-
-  useEffect(() => {
-    fetchNewsData();
-  }, [fetchNewsData]);
-
-  const handleAddPage = (e) => {
-    e.preventDefault();
-    if (newPage.name && newPage.rssUrl) {
-      const id = Date.now().toString();
-      const color = newPage.type === 'Police' ? 'bg-red-100 text-red-700' : 
-                   newPage.type === 'Government' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700';
-      const finalUrl = newPage.url || newPage.rssUrl;
-      setPages([...pages, { ...newPage, url: finalUrl, id, color }]);
-      setNewPage({ name: '', url: '', rssUrl: '', type: 'General' });
-      setShowAddModal(false);
-    }
-  };
-
-  const handleDeletePage = (e, id) => {
-    e.stopPropagation();
-    if(window.confirm('คุณต้องการลบแหล่งข้อมูลนี้ใช่หรือไม่?')) {
-      setPages(pages.filter(p => p.id !== id));
-      if (selectedPageId === id) setSelectedPageId(null);
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
-      <nav className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="bg-indigo-600 p-2 rounded-xl">
-              <LayoutDashboard className="text-white w-5 h-5" />
-            </div>
-            <h1 className="text-lg font-bold tracking-tight">HUB <span className="text-indigo-600">ข่าวราชการเชียงใหม่</span></h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <button onClick={() => setShowAddModal(true)} className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-3 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-sm">
-              <Plus className="w-4 h-4" /> เพิ่มเพจ
-            </button>
-            <button onClick={fetchNewsData} disabled={isLoading} className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-md">
-              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} /> {isLoading ? 'กำลังโหลด' : 'รีเฟรช'}
-            </button>
-          </div>
-        </div>
-      </nav>
-
-      <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <aside className="lg:col-span-3 space-y-4">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col sticky top-24 max-h-[calc(100vh-6rem)] overflow-hidden">
-            <div className="p-4 border-b border-slate-100 space-y-3 shrink-0">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-                <input 
-                  type="text" 
-                  placeholder={`ค้นหาจาก ${pages.length} หน่วยงาน...`} 
-                  className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500/20 outline-none"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <div className="flex flex-wrap gap-1">
-                {['All', 'Police', 'Government', 'PR'].map(type => (
-                  <button 
-                    key={type}
-                    onClick={() => { setFilterType(type); setSelectedPageId(null); }}
-                    className={`text-[9px] px-2 py-1 rounded font-bold transition-all ${filterType === type ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
-                  >
-                    {type === 'All' ? 'ทั้งหมด' : type}
-                  </button>
-                ))}
-              </div>
-            </div>
-            
-            <div className="overflow-y-auto p-2 space-y-1 custom-scrollbar flex-1">
-              {filteredPages.map((page) => (
-                <div 
-                  key={page.id} 
-                  onClick={() => setSelectedPageId(selectedPageId === page.id ? null : page.id)}
-                  className={`group flex items-center justify-between p-2.5 rounded-xl transition-all border cursor-pointer ${
-                    selectedPageId === page.id 
-                      ? 'bg-indigo-50 border-indigo-200 shadow-sm' 
-                      : 'border-transparent hover:bg-indigo-50/50'
-                  }`}
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className={`text-[11px] font-bold truncate leading-tight ${selectedPageId === page.id ? 'text-indigo-700' : 'text-slate-800'}`}>{page.name}</p>
-                    <div className="flex items-center gap-1.5 mt-1">
-                      <span className={`text-[8px] px-1.5 py-0.5 rounded font-black uppercase ${page.color}`}>{page.type}</span>
-                      <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shadow-sm shadow-emerald-200"></div>
-                    </div>
-                  </div>
-                  <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button 
-                      onClick={(e) => handleDeletePage(e, page.id)} 
-                      className="p-1.5 text-slate-300 hover:text-red-500 transition-colors"
-                      title="ลบเพจ"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
+    <!-- Navbar -->
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="bg-indigo-600 p-2 rounded-xl text-white">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
                 </div>
-              ))}
+                <h1 class="text-lg font-bold tracking-tight">HUB <span class="text-indigo-600">ข่าวราชการเชียงใหม่</span></h1>
             </div>
+            <div class="flex items-center gap-2">
+                <button onclick="openAddModal()" class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-3 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-sm">
+                    <i data-lucide="plus" class="w-4 h-4"></i> เพิ่มเพจ
+                </button>
+                <button id="refreshBtn" onclick="fetchNewsData()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-md">
+                    <i data-lucide="refresh-cw" class="w-4 h-4" id="refreshIcon"></i> <span id="refreshText">รีเฟรช</span>
+                </button>
+            </div>
+        </div>
+    </nav>
 
-            {/* อัปเดตปุ่มรีเซ็ตค่าเริ่มต้น ให้เคลียร์ V5 */}
-            <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-center shrink-0">
-              <button 
-                onClick={() => {
-                  if(window.confirm('คุณต้องการล้างข้อมูลเพจทั้งหมดที่เพิ่มเอง และกลับไปใช้ 17 เพจเริ่มต้นใช่หรือไม่?')) {
-                    localStorage.removeItem('cmNewsPagesV5');
-                    setPages(defaultPages);
-                  }
-                }}
-                className="text-[10px] font-bold text-slate-400 hover:text-red-500 flex items-center gap-1.5 transition-colors"
-              >
-                <RefreshCw className="w-3 h-3" /> คืนค่าเริ่มต้น (Reset Pages)
-              </button>
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-8 w-full flex-1">
+        
+        <!-- Sidebar -->
+        <aside class="lg:col-span-3 space-y-4">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col sticky top-24 max-h-[calc(100vh-6rem)] overflow-hidden">
+                <div class="p-4 border-b border-slate-100 space-y-3 shrink-0">
+                    <div class="relative">
+                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400"></i>
+                        <input type="text" id="searchInput" oninput="handleSearch()" placeholder="ค้นหาหน่วยงาน..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500/20 outline-none">
+                    </div>
+                    <div class="flex flex-wrap gap-1" id="filterContainer">
+                        <!-- Filters Rendered Here -->
+                    </div>
+                </div>
+                
+                <div class="overflow-y-auto p-2 space-y-1 custom-scrollbar flex-1" id="pagesList">
+                    <!-- Pages Rendered Here -->
+                </div>
+
+                <div class="p-3 bg-slate-50 border-t border-slate-100 flex justify-center shrink-0">
+                    <button onclick="resetToDefault()" class="text-[10px] font-bold text-slate-400 hover:text-red-500 flex items-center gap-1.5 transition-colors">
+                        <i data-lucide="refresh-cw" class="w-3 h-3"></i> คืนค่าเริ่มต้น (Reset Pages)
+                    </button>
+                </div>
             </div>
-          </div>
         </aside>
 
-        <main className="lg:col-span-9 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {posts
-              .filter(post => filterType === 'All' || post.type === filterType)
-              .filter(post => {
-                // อัปเดตระบบ Filter ให้รองรับกรณีที่ข่าวถูกยุบรวม (แชร์) ไว้ด้วยกัน
-                if (!selectedPageId) return true;
-                const selectedName = pages.find(p => p.id === selectedPageId)?.name;
-                return post.source === selectedName || (post.sharedBy && post.sharedBy.some(s => s.name === selectedName));
-              })
-              .map((post, idx) => {
-                const isRead = readPosts.includes(post.id);
-                return (
-              <article key={`${post.id}-${idx}`} className={`bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all flex flex-col h-full group ${isRead ? 'opacity-70 bg-slate-50' : ''}`}>
-                <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
-                  <img src={post.image} alt="" className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ${isRead ? 'grayscale-[40%]' : ''}`} />
-                  {isRead && (
-                    <div className="absolute top-3 right-3 bg-slate-900/60 backdrop-blur-sm text-white text-[10px] px-2.5 py-1 rounded-full flex items-center gap-1.5 font-bold shadow-sm">
-                      <CheckCircle className="w-3 h-3" /> อ่านแล้ว
-                    </div>
-                  )}
-                </div>
-                <div className="p-5 flex flex-col flex-1">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center font-bold text-[12px] text-indigo-600 border border-indigo-100 shrink-0">
-                        {post.source.charAt(0)}
-                      </div>
-                      <div className="flex flex-col min-w-0">
-                        <p className="text-xs font-bold text-slate-800 truncate leading-tight">
-                          {post.source}
-                          {post.sharedBy && post.sharedBy.length > 0 && (
-                            <span className="text-slate-400 font-medium ml-1 text-[10px]">
-                              (+{post.sharedBy.length} เพจ)
-                            </span>
-                          )}
-                        </p>
-                        <p className="text-[10px] text-slate-500 font-medium mt-0.5">{post.time}</p>
-                      </div>
-                    </div>
-                    <span className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider shrink-0 ${
-                      post.type === 'Police' ? 'bg-red-50 text-red-600' : 
-                      post.type === 'Government' ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600'
-                    }`}>
-                      {post.type}
-                    </span>
-                  </div>
-                  {/* กลับมาใช้ 5 บรรทัดตามที่คุณต้องการ */}
-                  <p className={`text-[13.5px] leading-relaxed whitespace-pre-line line-clamp-5 mb-5 flex-1 transition-colors ${isRead ? 'text-slate-500' : 'text-slate-700 group-hover:text-slate-900'}`}>
-                    {post.content}
-                  </p>
-                  <div className="pt-4 border-t border-slate-100 flex flex-col gap-2">
-                    <div className="flex items-center justify-between">
-                      <a href={post.sourceUrl} target="_blank" rel="noopener noreferrer" onClick={() => !isRead && toggleReadStatus(post.id)} className="text-indigo-600 px-3 py-1.5 rounded-lg text-[11px] font-bold hover:bg-indigo-50 transition-colors flex items-center gap-1.5 -ml-2 uppercase tracking-tight">
-                        ดูโพสต์ต้นฉบับ <ExternalLink className="w-3.5 h-3.5" />
-                      </a>
-                      <div className="flex items-center gap-1">
-                        <button 
-                          onClick={() => toggleReadStatus(post.id)}
-                          className={`p-1.5 transition-colors rounded-lg flex items-center gap-1 text-[10px] font-bold ${isRead ? 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100' : 'text-slate-400 bg-slate-50 hover:bg-slate-100 hover:text-slate-600'}`}
-                          title={isRead ? "ทำเครื่องหมายว่ายังไม่อ่าน" : "ทำเครื่องหมายว่าอ่านแล้ว"}
-                        >
-                          <CheckCircle className="w-4 h-4" />
-                        </button>
-                        {post.isLive && (
-                          <span className="text-[9px] text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded-full flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span> สด
-                          </span>
-                        )}
-                        <button className="text-slate-400 hover:text-indigo-600 p-1.5 transition-colors bg-slate-50 hover:bg-indigo-50 rounded-lg">
-                          <Share2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                    
-                    {/* ส่วนแสดงรายชื่อเพจอื่นๆ ที่แชร์ข่าวเดียวกัน (จะแสดงก็ต่อเมื่อมีเพจอื่นแชร์ซ้ำ) */}
-                    {post.sharedBy && post.sharedBy.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-1 items-center">
-                        <span className="text-[9px] text-slate-400 font-medium py-1">แชร์ร่วมกับ:</span>
-                        {post.sharedBy.map((shared, i) => (
-                           <a key={i} href={shared.url} target="_blank" rel="noopener noreferrer" className="text-[9px] text-slate-500 bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded transition-colors truncate max-w-[120px]">
-                             {shared.name}
-                           </a>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </article>
-              );
-            })}
-            {posts.length === 0 && !isLoading && (
-              <div className="col-span-full flex flex-col items-center justify-center py-20 text-slate-400 bg-white rounded-3xl border border-dashed border-slate-200">
-                <AlertCircle className="w-12 h-12 mb-3 opacity-20" />
-                <p className="text-sm font-medium">ไม่พบข้อมูลในขณะนี้ กรุณารีเฟรชหรือรอสักครู่</p>
-              </div>
-            )}
-          </div>
+        <!-- Feed -->
+        <main class="lg:col-span-9 space-y-6">
+            <div id="postsGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <!-- Posts Rendered Here -->
+            </div>
+            <div id="loadingState" class="hidden col-span-full flex-col items-center justify-center py-20 text-slate-400 bg-white rounded-3xl border border-dashed border-slate-200">
+                <i data-lucide="loader-2" class="w-12 h-12 mb-3 animate-spin opacity-50"></i>
+                <p class="text-sm font-medium">กำลังโหลดข่าวสารล่าสุด...</p>
+            </div>
+            <div id="emptyState" class="hidden col-span-full flex-col items-center justify-center py-20 text-slate-400 bg-white rounded-3xl border border-dashed border-slate-200">
+                <i data-lucide="alert-circle" class="w-12 h-12 mb-3 opacity-20"></i>
+                <p class="text-sm font-medium">ไม่พบข้อมูลในขณะนี้ กรุณารีเฟรชหรือรอสักครู่</p>
+            </div>
         </main>
-      </div>
-
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowAddModal(false)} />
-          <div className="bg-white rounded-3xl w-full max-w-md p-8 relative shadow-2xl border border-slate-100">
-            <h3 className="text-xl font-bold text-slate-800 mb-2">ตั้งค่าแหล่งข้อมูล</h3>
-            <p className="text-slate-500 text-xs mb-6">จัดการชื่อหน่วยงานและลิงก์ XML RSS (.xml)</p>
-            <form onSubmit={handleAddPage} className="space-y-4">
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">ชื่อหน่วยงาน</label>
-                <input type="text" required placeholder="เช่น สำนักงานจราจรเชียงใหม่" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/20 outline-none" value={newPage.name} onChange={e => setNewPage({...newPage, name: e.target.value})} />
-              </div>
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">ประเภทหน่วยงาน</label>
-                <select className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/20 outline-none" value={newPage.type} onChange={e => setNewPage({...newPage, type: e.target.value})}>
-                  <option value="General">ทั่วไป (General)</option>
-                  <option value="PR">ประชาสัมพันธ์ (PR)</option>
-                  <option value="Government">ราชการ (Government)</option>
-                  <option value="Police">ตำรวจ (Police)</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">RSS URL (.xml)</label>
-                <input type="url" required placeholder="https://rss.app/feeds/..." className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/20 outline-none" value={newPage.rssUrl} onChange={e => setNewPage({...newPage, rssUrl: e.target.value})} />
-              </div>
-              <div className="flex gap-3 pt-6">
-                <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 text-slate-500 font-bold py-3 text-sm">ยกเลิก</button>
-                <button type="submit" className="flex-[2] bg-indigo-600 text-white font-bold py-3 rounded-2xl shadow-lg hover:bg-indigo-700 transition-all">บันทึก</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
-  );
-};
 
-export default App;
+    <!-- Add Modal -->
+    <div id="addModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeAddModal()"></div>
+        <div class="bg-white rounded-3xl w-full max-w-md p-8 relative shadow-2xl border border-slate-100 z-10">
+            <h3 class="text-xl font-bold text-slate-800 mb-2">ตั้งค่าแหล่งข้อมูล</h3>
+            <p class="text-slate-500 text-xs mb-6">จัดการชื่อหน่วยงานและลิงก์ XML RSS (.xml)</p>
+            <form onsubmit="handleAddPage(event)" class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">ชื่อหน่วยงาน</label>
+                    <input type="text" id="addName" required placeholder="เช่น สำนักงานจราจรเชียงใหม่" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/20 outline-none">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">ประเภทหน่วยงาน</label>
+                    <select id="addType" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/20 outline-none">
+                        <option value="General">ทั่วไป (General)</option>
+                        <option value="PR">ประชาสัมพันธ์ (PR)</option>
+                        <option value="Government">ราชการ (Government)</option>
+                        <option value="Police">ตำรวจ (Police)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-1.5 tracking-wider">RSS URL (.xml)</label>
+                    <input type="url" id="addRss" required placeholder="https://rss.app/feeds/..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/20 outline-none">
+                </div>
+                <div class="flex gap-3 pt-6">
+                    <button type="button" onclick="closeAddModal()" class="flex-1 text-slate-500 font-bold py-3 text-sm">ยกเลิก</button>
+                    <button type="submit" class="flex-[2] bg-indigo-600 text-white font-bold py-3 rounded-2xl shadow-lg hover:bg-indigo-700 transition-all">บันทึก</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Application Logic -->
+    <script>
+        // 1. ข้อมูลตั้งต้น
+        const defaultPages = [
+            { id: '1', name: 'ตำรวจภูธรภาค 5', url: 'https://www.facebook.com/Police5Thailand/', rssUrl: 'https://rss.app/feeds/9NDB0gVuPGMQkXUF.xml', type: 'Police', color: 'bg-red-100 text-red-700' },
+            { id: '2', name: 'เทศบาลนครเชียงใหม่', url: 'https://www.facebook.com/cmmayor', rssUrl: 'https://rss.app/feeds/BDsDerwS4BhL0ExL.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
+            { id: '3', name: 'ประชาสัมพันธ์เชียงใหม่', url: 'https://www.facebook.com/chiangmaipr', rssUrl: 'https://rss.app/feeds/ZqCJu7HKiR7jas3R.xml', type: 'PR', color: 'bg-green-100 text-green-700' },
+            { id: '4', name: 'คณะแพทยศาสตร์ มช.', url: 'https://www.facebook.com/medcmuth', rssUrl: 'https://rss.app/feeds/INGRSaq39enCJvxF.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
+            { id: '5', name: 'สวท.เชียงใหม่', url: 'https://www.facebook.com/chiangmairadiothailand', rssUrl: 'https://rss.app/feeds/3N0vcMBX7RGIF4Zg.xml', type: 'PR', color: 'bg-green-100 text-green-700' },
+            { id: '6', name: 'อบจ.เชียงใหม่', url: 'https://www.facebook.com/cmpao888', rssUrl: 'https://rss.app/feeds/e9pwhxM6rcb1rIjO.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
+            { id: '7', name: 'สปข. 3 เชียงใหม่', url: 'https://www.facebook.com/PRDChiangMai', rssUrl: 'https://rss.app/feeds/MlZ6fjDnqWBBk70A.xml', type: 'PR', color: 'bg-green-100 text-green-700' },
+            { id: '8', name: 'สำนักศิลปากรที่ 7', url: 'https://www.facebook.com/finearts7chiangmai', rssUrl: 'https://rss.app/feeds/VzDXL8wh9CF1NIQD.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
+            { id: '9', name: 'ศูนย์ส่งเสริมอุตสาหกรรมฯ', url: 'https://www.facebook.com/JICChiangMai', rssUrl: 'https://rss.app/feeds/HMSaKJsoJQDZTVEY.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
+            { id: '10', name: 'สำนักงานขนส่งเชียงใหม่', url: 'https://www.facebook.com/profile.php?id=100064666933216', rssUrl: 'https://rss.app/feeds/XbBpNpdy2abueUo0.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
+            { id: '11', name: 'กลุ่มงานจราจร เชียงใหม่', url: 'https://www.facebook.com/tpdchiangmai221', rssUrl: 'https://rss.app/feeds/yxTX1YfXaoDAqldY.xml', type: 'Police', color: 'bg-red-100 text-red-700' },
+            { id: '12', name: 'กองบิน 41 เชียงใหม่', url: 'https://www.facebook.com/Wing41', rssUrl: 'https://rss.app/feeds/akPMfJtCeBXla8Ik.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
+            { id: '13', name: 'ตม. เชียงใหม่', url: 'https://www.facebook.com/ChiangmaiImmigration', rssUrl: 'https://rss.app/feeds/esEH5XNvkhQrLaBV.xml', type: 'Police', color: 'bg-red-100 text-red-700' },
+            { id: '14', name: 'สภ.เมืองเชียงใหม่', url: 'https://www.facebook.com/MuangChiangmaiPolice', rssUrl: 'https://rss.app/feeds/tMAdWYbsDeD8jdZq.xml', type: 'Police', color: 'bg-red-100 text-red-700' },
+            { id: '15', name: 'ศูนย์อุตุนิยมวิทยาภาคเหนือ', url: 'https://www.facebook.com/NorthernMeteorologicalCenter', rssUrl: 'https://rss.app/feeds/Nrkkg0BODlkm6IZE.xml', type: 'PR', color: 'bg-green-100 text-green-700' },
+            { id: '16', name: 'ปภ. เชียงใหม่', url: 'https://www.facebook.com/DDPMChiangmai', rssUrl: 'https://rss.app/feeds/g6iKtFW8PH3UvRgm.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
+            { id: '17', name: 'ท่าอากาศยานเชียงใหม่', url: 'https://www.facebook.com/ChiangmaiAirport', rssUrl: 'https://rss.app/feeds/fUY6EBMuwWUfXNel.xml', type: 'PR', color: 'bg-green-100 text-green-700' }
+        ];
+
+        // 2. State & Storage
+        let pages = JSON.parse(localStorage.getItem('cmNewsPagesHTML')) || defaultPages;
+        let readPosts = JSON.parse(localStorage.getItem('cmNewsReadPostsHTML')) || [];
+        let allFetchedPosts = [];
+        let filterType = 'All';
+        let searchTerm = '';
+        let selectedPageId = null;
+        let isLoading = false;
+
+        function savePages() { localStorage.setItem('cmNewsPagesHTML', JSON.stringify(pages)); }
+        function saveReadPosts() { localStorage.setItem('cmNewsReadPostsHTML', JSON.stringify(readPosts)); }
+
+        // 3. UI Rendering
+        function renderFilters() {
+            const container = document.getElementById('filterContainer');
+            const types = ['All', 'Police', 'Government', 'PR'];
+            container.innerHTML = types.map(type => `
+                <button onclick="setFilter('${type}')" class="text-[9px] px-2 py-1 rounded font-bold transition-all ${filterType === type ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}">
+                    ${type === 'All' ? 'ทั้งหมด' : type}
+                </button>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function renderSidebar() {
+            const container = document.getElementById('pagesList');
+            document.getElementById('searchInput').placeholder = `ค้นหาจาก ${pages.length} หน่วยงาน...`;
+            
+            const filteredPages = pages.filter(p => 
+                p.name.toLowerCase().includes(searchTerm.toLowerCase()) && 
+                (filterType === 'All' || p.type === filterType)
+            );
+
+            container.innerHTML = filteredPages.map(page => `
+                <div onclick="togglePageSelect('${page.id}')" class="group flex items-center justify-between p-2.5 rounded-xl transition-all border cursor-pointer ${selectedPageId === page.id ? 'bg-indigo-50 border-indigo-200 shadow-sm' : 'border-transparent hover:bg-indigo-50/50'}">
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[11px] font-bold truncate leading-tight ${selectedPageId === page.id ? 'text-indigo-700' : 'text-slate-800'}">${page.name}</p>
+                        <div class="flex items-center gap-1.5 mt-1">
+                            <span class="text-[8px] px-1.5 py-0.5 rounded font-black uppercase ${page.color}">${page.type}</span>
+                            <div class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shadow-sm shadow-emerald-200"></div>
+                        </div>
+                    </div>
+                    <div class="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onclick="deletePage(event, '${page.id}')" class="p-1.5 text-slate-300 hover:text-red-500 transition-colors" title="ลบเพจ">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function renderPosts() {
+            const container = document.getElementById('postsGrid');
+            const emptyState = document.getElementById('emptyState');
+            const loadingState = document.getElementById('loadingState');
+
+            if (isLoading) {
+                container.innerHTML = '';
+                emptyState.classList.add('hidden');
+                loadingState.classList.remove('hidden');
+                loadingState.style.display = 'flex';
+                return;
+            }
+            
+            loadingState.classList.add('hidden');
+            loadingState.style.display = 'none';
+
+            let displayPosts = allFetchedPosts.filter(post => filterType === 'All' || post.type === filterType);
+            
+            if (selectedPageId) {
+                const selectedPage = pages.find(p => p.id === selectedPageId);
+                if (selectedPage) {
+                    displayPosts = displayPosts.filter(post => 
+                        post.source === selectedPage.name || 
+                        (post.sharedBy && post.sharedBy.some(s => s.name === selectedPage.name))
+                    );
+                }
+            }
+
+            if (displayPosts.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                emptyState.style.display = 'flex';
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            emptyState.style.display = 'none';
+
+            container.innerHTML = displayPosts.map(post => {
+                const isRead = readPosts.includes(post.id);
+                return `
+                <article class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all flex flex-col h-full group ${isRead ? 'opacity-70 bg-slate-50' : ''}">
+                    <div class="relative aspect-[16/10] overflow-hidden bg-slate-100">
+                        <img src="${post.image}" alt="" onerror="this.src='https://images.unsplash.com/photo-1590402444723-6447816f1c7d?auto=format&fit=crop&q=80&w=800'" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ${isRead ? 'grayscale-[40%]' : ''}" />
+                        ${isRead ? `
+                        <div class="absolute top-3 right-3 bg-slate-900/60 backdrop-blur-sm text-white text-[10px] px-2.5 py-1 rounded-full flex items-center gap-1.5 font-bold shadow-sm">
+                            <i data-lucide="check-circle" class="w-3 h-3"></i> อ่านแล้ว
+                        </div>` : ''}
+                    </div>
+                    <div class="p-5 flex flex-col flex-1">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center font-bold text-[12px] text-indigo-600 border border-indigo-100 shrink-0">
+                                    ${post.source.charAt(0)}
+                                </div>
+                                <div class="flex flex-col min-w-0">
+                                    <p class="text-xs font-bold text-slate-800 truncate leading-tight">
+                                        ${post.source}
+                                        ${post.sharedBy && post.sharedBy.length > 0 ? `<span class="text-slate-400 font-medium ml-1 text-[10px]">(+${post.sharedBy.length} เพจ)</span>` : ''}
+                                    </p>
+                                    <p class="text-[10px] text-slate-500 font-medium mt-0.5">${post.time}</p>
+                                </div>
+                            </div>
+                            <span class="px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider shrink-0 ${
+                                post.type === 'Police' ? 'bg-red-50 text-red-600' : 
+                                post.type === 'Government' ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600'
+                            }">${post.type}</span>
+                        </div>
+                        <p class="text-[13.5px] leading-relaxed whitespace-pre-line line-clamp-5 mb-5 flex-1 transition-colors ${isRead ? 'text-slate-500' : 'text-slate-700 group-hover:text-slate-900'}">
+                            ${post.content}
+                        </p>
+                        <div class="pt-4 border-t border-slate-100 flex flex-col gap-2">
+                            <div class="flex items-center justify-between">
+                                <a href="${post.sourceUrl}" target="_blank" onclick="${!isRead ? `toggleReadStatus('${post.id}')` : ''}" class="text-indigo-600 px-3 py-1.5 rounded-lg text-[11px] font-bold hover:bg-indigo-50 transition-colors flex items-center gap-1.5 -ml-2 uppercase tracking-tight">
+                                    ดูโพสต์ต้นฉบับ <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                                </a>
+                                <div class="flex items-center gap-1">
+                                    <button onclick="toggleReadStatus('${post.id}')" class="p-1.5 transition-colors rounded-lg flex items-center gap-1 text-[10px] font-bold ${isRead ? 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100' : 'text-slate-400 bg-slate-50 hover:bg-slate-100 hover:text-slate-600'}" title="${isRead ? 'ทำเครื่องหมายว่ายังไม่อ่าน' : 'ทำเครื่องหมายว่าอ่านแล้ว'}">
+                                        <i data-lucide="check-circle" class="w-4 h-4"></i>
+                                    </button>
+                                    ${post.isLive ? `
+                                    <span class="text-[9px] text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded-full flex items-center gap-1.5">
+                                        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span> สด
+                                    </span>` : ''}
+                                </div>
+                            </div>
+                            ${post.sharedBy && post.sharedBy.length > 0 ? `
+                            <div class="flex flex-wrap gap-1 mt-1 items-center">
+                                <span class="text-[9px] text-slate-400 font-medium py-1">แชร์ร่วมกับ:</span>
+                                ${post.sharedBy.map(shared => `
+                                    <a href="${shared.url}" target="_blank" class="text-[9px] text-slate-500 bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded transition-colors truncate max-w-[120px]">${shared.name}</a>
+                                `).join('')}
+                            </div>` : ''}
+                        </div>
+                    </div>
+                </article>
+                `;
+            }).join('');
+            
+            lucide.createIcons();
+        }
+
+        // 4. Data Fetching
+        function parseXmlItems(xmlText, page) {
+            try {
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+                const items = Array.from(xmlDoc.querySelectorAll("item"));
+                if (items.length === 0) return null;
+
+                return items.slice(0, 10).map(item => {
+                    const title = item.querySelector("title")?.textContent || "";
+                    const link = item.querySelector("link")?.textContent || page.url;
+                    const description = item.querySelector("description")?.textContent || "";
+                    const pubDate = item.querySelector("pubDate")?.textContent;
+                    
+                    let thumbnail = item.querySelector("enclosure")?.getAttribute("url") || 
+                                    item.getElementsByTagNameNS("*", "content")?.[0]?.getAttribute("url");
+                    
+                    if (!thumbnail && description) {
+                        const imgMatch = description.match(/<img[^>]+src="([^">]+)"/);
+                        if (imgMatch) thumbnail = imgMatch[1];
+                    }
+                    
+                    let htmlContent = description.replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n\n');
+                    let cleanContent = htmlContent.replace(/<[^>]+>/g, '').trim().replace(/\n{3,}/g, '\n\n');
+                    
+                    let fullText = cleanContent.length > title.length ? cleanContent : title;
+                    const displayContent = fullText.length > 1000 ? fullText.substring(0, 1000) + '...' : fullText;
+                    
+                    const parsedDate = pubDate ? new Date(pubDate) : new Date();
+                    const displayTime = parsedDate.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' น.';
+                    
+                    return {
+                        id: item.querySelector("guid")?.textContent || link + Math.random(),
+                        source: page.name, sourceUrl: link, type: page.type, content: displayContent,
+                        image: thumbnail || 'https://images.unsplash.com/photo-1590402444723-6447816f1c7d?auto=format&fit=crop&q=80&w=800',
+                        time: displayTime, timestamp: parsedDate.getTime(), isLive: true
+                    };
+                });
+            } catch(e) { return null; }
+        }
+
+        async function fetchNewsData() {
+            isLoading = true;
+            renderPosts();
+            document.getElementById('refreshIcon').classList.add('animate-spin');
+            document.getElementById('refreshText').innerText = 'กำลังโหลด';
+
+            const fetchPromises = pages.map(async (page) => {
+                if (!page.rssUrl) return [];
+                const timestampedUrl = page.rssUrl + (page.rssUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
+                
+                try {
+                    const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(timestampedUrl)}`);
+                    if (!res.ok) throw new Error('rss2json failed');
+                    const data = await res.json();
+                    
+                    if (data.status === 'ok' && data.items && data.items.length > 0) {
+                        return data.items.slice(0, 10).map(item => {
+                            const parsedDate = item.pubDate ? new Date(item.pubDate) : new Date();
+                            const displayTime = parsedDate.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' น.';
+
+                            let thumb = item.thumbnail || item.enclosure?.link;
+                            if (!thumb && item.description) {
+                                const imgMatch = item.description.match(/<img[^>]+src="([^">]+)"/);
+                                if (imgMatch) thumb = imgMatch[1];
+                            }
+
+                            let htmlContent = item.description || item.content || "";
+                            htmlContent = htmlContent.replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n\n');
+                            let cleanContent = htmlContent.replace(/<[^>]+>/g, '').trim().replace(/\n{3,}/g, '\n\n');
+                            
+                            const title = item.title || "";
+                            let fullText = cleanContent.length > title.length ? cleanContent : title;
+                            const content = fullText.length > 1000 ? fullText.substring(0, 1000) + '...' : fullText;
+
+                            return {
+                                id: item.guid || item.link, source: page.name, sourceUrl: item.link, type: page.type, content: content,
+                                image: thumb || 'https://images.unsplash.com/photo-1590402444723-6447816f1c7d?auto=format&fit=crop&q=80&w=800',
+                                time: displayTime, timestamp: parsedDate.getTime(), isLive: true
+                            };
+                        });
+                    }
+                } catch (e) {
+                    try {
+                        const corsRes = await fetch(`https://corsproxy.io/?${encodeURIComponent(timestampedUrl)}`);
+                        if (corsRes.ok) {
+                            const xmlText = await corsRes.text();
+                            const parsed = parseXmlItems(xmlText, page);
+                            if (parsed) return parsed;
+                        }
+                    } catch (err2) {
+                        console.warn(`Fetch failed for ${page.name}`);
+                    }
+                }
+                return [];
+            });
+
+            try {
+                const results = await Promise.all(fetchPromises);
+                const allPosts = results.flat();
+                
+                const mergedPostsMap = new Map();
+                allPosts.forEach(post => {
+                    const matchText = (post.content || '').replace(/\s+/g, '').substring(0, 60);
+                    const key = matchText.length > 20 ? matchText : post.id;
+
+                    if (mergedPostsMap.has(key)) {
+                        const existingPost = mergedPostsMap.get(key);
+                        existingPost.sharedBy = existingPost.sharedBy || [];
+                        if (existingPost.source !== post.source && !existingPost.sharedBy.some(s => s.name === post.source)) {
+                            existingPost.sharedBy.push({ name: post.source, url: post.sourceUrl });
+                        }
+                        if (post.timestamp > existingPost.timestamp) {
+                            existingPost.timestamp = post.timestamp;
+                            existingPost.time = post.time;
+                        }
+                    } else {
+                        mergedPostsMap.set(key, { ...post, sharedBy: [] });
+                    }
+                });
+
+                allFetchedPosts = Array.from(mergedPostsMap.values()).sort((a, b) => b.timestamp - a.timestamp);
+                
+            } catch (err) {
+                console.error("Fetch Error:", err);
+            } finally {
+                isLoading = false;
+                document.getElementById('refreshIcon').classList.remove('animate-spin');
+                document.getElementById('refreshText').innerText = 'รีเฟรช';
+                renderPosts();
+            }
+        }
+
+        // 5. Interactions
+        function setFilter(type) {
+            filterType = type;
+            selectedPageId = null;
+            renderFilters();
+            renderSidebar();
+            renderPosts();
+        }
+
+        function handleSearch() {
+            searchTerm = document.getElementById('searchInput').value;
+            renderSidebar();
+        }
+
+        function togglePageSelect(id) {
+            selectedPageId = selectedPageId === id ? null : id;
+            renderSidebar();
+            renderPosts();
+        }
+
+        function toggleReadStatus(postId) {
+            if (readPosts.includes(postId)) {
+                readPosts = readPosts.filter(id => id !== postId);
+            } else {
+                readPosts.push(postId);
+            }
+            saveReadPosts();
+            renderPosts();
+        }
+
+        function deletePage(e, id) {
+            e.stopPropagation();
+            if(window.confirm('คุณต้องการลบแหล่งข้อมูลนี้ใช่หรือไม่?')) {
+                pages = pages.filter(p => p.id !== id);
+                if (selectedPageId === id) selectedPageId = null;
+                savePages();
+                renderSidebar();
+                fetchNewsData(); // ดึงข้อมูลใหม่
+            }
+        }
+
+        function resetToDefault() {
+            if(window.confirm('คุณต้องการล้างข้อมูลเพจทั้งหมดที่เพิ่มเอง และกลับไปใช้ 17 เพจเริ่มต้นใช่หรือไม่?')) {
+                pages = [...defaultPages];
+                savePages();
+                renderSidebar();
+                fetchNewsData();
+            }
+        }
+
+        // 6. Modal Functions
+        function openAddModal() {
+            document.getElementById('addModal').classList.remove('hidden');
+            document.getElementById('addModal').classList.add('flex');
+        }
+
+        function closeAddModal() {
+            document.getElementById('addModal').classList.add('hidden');
+            document.getElementById('addModal').classList.remove('flex');
+            document.getElementById('addName').value = '';
+            document.getElementById('addRss').value = '';
+        }
+
+        function handleAddPage(e) {
+            e.preventDefault();
+            const name = document.getElementById('addName').value;
+            const type = document.getElementById('addType').value;
+            const rssUrl = document.getElementById('addRss').value;
+            
+            if (name && rssUrl) {
+                const id = Date.now().toString();
+                const color = type === 'Police' ? 'bg-red-100 text-red-700' : 
+                             type === 'Government' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700';
+                
+                pages.push({ id, name, url: rssUrl, rssUrl, type, color });
+                savePages();
+                closeAddModal();
+                renderSidebar();
+                fetchNewsData();
+            }
+        }
+
+        // Initial Render
+        document.addEventListener('DOMContentLoaded', () => {
+            renderFilters();
+            renderSidebar();
+            fetchNewsData();
+        });
+
+    </script>
+</body>
+</html>
