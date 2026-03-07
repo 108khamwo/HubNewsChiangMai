@@ -134,7 +134,7 @@
             { id: '6', name: 'อบจ.เชียงใหม่', url: 'https://www.facebook.com/cmpao888', rssUrl: 'https://rss.app/feeds/e9pwhxM6rcb1rIjO.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
             { id: '7', name: 'สปข. 3 เชียงใหม่', url: 'https://www.facebook.com/PRDChiangMai', rssUrl: 'https://rss.app/feeds/MlZ6fjDnqWBBk70A.xml', type: 'PR', color: 'bg-green-100 text-green-700' },
             { id: '8', name: 'สำนักศิลปากรที่ 7', url: 'https://www.facebook.com/finearts7chiangmai', rssUrl: 'https://rss.app/feeds/VzDXL8wh9CF1NIQD.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
-            { id: '9', name: 'ศูนย์ส่งเสริมอุตสาหกรรมฯ', url: 'https://www.facebook.com/JICChiangMai', rssUrl: 'https://rss.app/feeds/HMSaKJsoJQDZTVEY.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
+            { id: '9', name: 'ศูนย์ประชาสัมพันธ์ร่วมเชียงใหม่', url: 'https://www.facebook.com/JICChiangMai', rssUrl: 'https://rss.app/feeds/HMSaKJsoJQDZTVEY.xml', type: 'PR', color: 'bg-green-100 text-green-700' },
             { id: '10', name: 'สำนักงานขนส่งเชียงใหม่', url: 'https://www.facebook.com/profile.php?id=100064666933216', rssUrl: 'https://rss.app/feeds/XbBpNpdy2abueUo0.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
             { id: '11', name: 'กลุ่มงานจราจร เชียงใหม่', url: 'https://www.facebook.com/tpdchiangmai221', rssUrl: 'https://rss.app/feeds/yxTX1YfXaoDAqldY.xml', type: 'Police', color: 'bg-red-100 text-red-700' },
             { id: '12', name: 'กองบิน 41 เชียงใหม่', url: 'https://www.facebook.com/Wing41', rssUrl: 'https://rss.app/feeds/akPMfJtCeBXla8Ik.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
@@ -146,20 +146,22 @@
         ];
 
         // 2. State & Storage
-        let pages = JSON.parse(localStorage.getItem('cmNewsPagesHTML_v2')) || defaultPages;
-        let readPosts = JSON.parse(localStorage.getItem('cmNewsReadPostsHTML_v2')) || [];
+        let pages = JSON.parse(localStorage.getItem('cmNewsPagesHTML_v3')) || defaultPages;
+        let readPosts = JSON.parse(localStorage.getItem('cmNewsReadPostsHTML_v3')) || [];
         let allFetchedPosts = [];
         let filterType = 'All';
         let searchTerm = '';
         let selectedPageId = null;
         let isLoading = false;
 
-        function savePages() { localStorage.setItem('cmNewsPagesHTML_v2', JSON.stringify(pages)); }
-        function saveReadPosts() { localStorage.setItem('cmNewsReadPostsHTML_v2', JSON.stringify(readPosts)); }
+        function savePages() { localStorage.setItem('cmNewsPagesHTML_v3', JSON.stringify(pages)); }
+        function saveReadPosts() { localStorage.setItem('cmNewsReadPostsHTML_v3', JSON.stringify(readPosts)); }
 
         // ล้างความจำเก่าที่จับคู่ผิดทิ้ง
         localStorage.removeItem('cmNewsPagesHTML');
         localStorage.removeItem('cmNewsReadPostsHTML');
+        localStorage.removeItem('cmNewsPagesHTML_v2');
+        localStorage.removeItem('cmNewsReadPostsHTML_v2');
 
         // 3. UI Rendering
         function renderFilters() {
