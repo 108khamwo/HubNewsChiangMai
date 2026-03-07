@@ -138,24 +138,28 @@
             { id: '10', name: 'สำนักงานขนส่งเชียงใหม่', url: 'https://www.facebook.com/profile.php?id=100064666933216', rssUrl: 'https://rss.app/feeds/XbBpNpdy2abueUo0.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
             { id: '11', name: 'กลุ่มงานจราจร เชียงใหม่', url: 'https://www.facebook.com/tpdchiangmai221', rssUrl: 'https://rss.app/feeds/yxTX1YfXaoDAqldY.xml', type: 'Police', color: 'bg-red-100 text-red-700' },
             { id: '12', name: 'กองบิน 41 เชียงใหม่', url: 'https://www.facebook.com/Wing41', rssUrl: 'https://rss.app/feeds/akPMfJtCeBXla8Ik.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
-            { id: '13', name: 'ตม. เชียงใหม่', url: 'https://www.facebook.com/ChiangmaiImmigration', rssUrl: 'https://rss.app/feeds/esEH5XNvkhQrLaBV.xml', type: 'Police', color: 'bg-red-100 text-red-700' },
+            { id: '13', name: 'ตม. เชียงใหม่', url: 'https://www.facebook.com/ChiangmaiImmigration', rssUrl: 'https://rss.app/feeds/Nrkkg0BODlkm6IZE.xml', type: 'Police', color: 'bg-red-100 text-red-700' },
             { id: '14', name: 'สภ.เมืองเชียงใหม่', url: 'https://www.facebook.com/MuangChiangmaiPolice', rssUrl: 'https://rss.app/feeds/tMAdWYbsDeD8jdZq.xml', type: 'Police', color: 'bg-red-100 text-red-700' },
-            { id: '15', name: 'ศูนย์อุตุนิยมวิทยาภาคเหนือ', url: 'https://www.facebook.com/NorthernMeteorologicalCenter', rssUrl: 'https://rss.app/feeds/Nrkkg0BODlkm6IZE.xml', type: 'PR', color: 'bg-green-100 text-green-700' },
+            { id: '15', name: 'ศูนย์อุตุนิยมวิทยาภาคเหนือ', url: 'https://www.facebook.com/NorthernMeteorologicalCenter', rssUrl: 'https://rss.app/feeds/esEH5XNvkhQrLaBV.xml', type: 'PR', color: 'bg-green-100 text-green-700' },
             { id: '16', name: 'ปภ. เชียงใหม่', url: 'https://www.facebook.com/DDPMChiangmai', rssUrl: 'https://rss.app/feeds/g6iKtFW8PH3UvRgm.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
             { id: '17', name: 'ท่าอากาศยานเชียงใหม่', url: 'https://www.facebook.com/ChiangmaiAirport', rssUrl: 'https://rss.app/feeds/fUY6EBMuwWUfXNel.xml', type: 'PR', color: 'bg-green-100 text-green-700' }
         ];
 
         // 2. State & Storage
-        let pages = JSON.parse(localStorage.getItem('cmNewsPagesHTML')) || defaultPages;
-        let readPosts = JSON.parse(localStorage.getItem('cmNewsReadPostsHTML')) || [];
+        let pages = JSON.parse(localStorage.getItem('cmNewsPagesHTML_v2')) || defaultPages;
+        let readPosts = JSON.parse(localStorage.getItem('cmNewsReadPostsHTML_v2')) || [];
         let allFetchedPosts = [];
         let filterType = 'All';
         let searchTerm = '';
         let selectedPageId = null;
         let isLoading = false;
 
-        function savePages() { localStorage.setItem('cmNewsPagesHTML', JSON.stringify(pages)); }
-        function saveReadPosts() { localStorage.setItem('cmNewsReadPostsHTML', JSON.stringify(readPosts)); }
+        function savePages() { localStorage.setItem('cmNewsPagesHTML_v2', JSON.stringify(pages)); }
+        function saveReadPosts() { localStorage.setItem('cmNewsReadPostsHTML_v2', JSON.stringify(readPosts)); }
+
+        // ล้างความจำเก่าที่จับคู่ผิดทิ้ง
+        localStorage.removeItem('cmNewsPagesHTML');
+        localStorage.removeItem('cmNewsReadPostsHTML');
 
         // 3. UI Rendering
         function renderFilters() {
