@@ -36,6 +36,11 @@
                 <h1 class="text-lg font-bold tracking-tight">HUB <span class="text-indigo-600">ข่าวราชการเชียงใหม่</span></h1>
             </div>
             <div class="flex items-center gap-2">
+                <select id="fetchLimitSelect" onchange="changeFetchLimit(this.value)" class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-3 py-2 rounded-xl text-sm font-bold focus:outline-none shadow-sm cursor-pointer transition-all">
+                    <option value="10">ดึง 10 ข่าว/เพจ</option>
+                    <option value="20">ดึง 20 ข่าว/เพจ</option>
+                    <option value="30">ดึง 30 ข่าว/เพจ</option>
+                </select>
                 <button onclick="openAddModal()" class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-3 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-sm">
                     <i data-lucide="plus" class="w-4 h-4"></i> เพิ่มเพจ
                 </button>
@@ -144,20 +149,22 @@
             { id: '16', name: 'ปภ. เชียงใหม่', url: 'https://www.facebook.com/DDPMChiangmai', rssUrl: 'https://rss.app/feeds/g6iKtFW8PH3UvRgm.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
             { id: '17', name: 'ท่าอากาศยานเชียงใหม่', url: 'https://www.facebook.com/ChiangmaiAirport', rssUrl: 'https://rss.app/feeds/fUY6EBMuwWUfXNel.xml', type: 'PR', color: 'bg-green-100 text-green-700' },
             { id: '18', name: 'ศูนย์ชั่งตวงวัดภาคเหนือ', url: '#', rssUrl: 'https://rss.app/feeds/z9RxEAmev0wyphOx.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
-            { id: '19', name: 'สถานีตำรวจภูธรแม่ปิง จังหวัดเชียงใหม่', url: '#', rssUrl: 'https://rss.app/feeds/wVRjca9Wit8AaUvu.xml', type: 'Police', color: 'bg-red-100 text-red-700' }
+            { id: '19', name: 'สถานีตำรวจภูธรแม่ปิง จังหวัดเชียงใหม่', url: '#', rssUrl: 'https://rss.app/feeds/wVRjca9Wit8AaUvu.xml', type: 'Police', color: 'bg-red-100 text-red-700' },
+            { id: '20', name: 'กองกำลังผาเมือง/กองอำนวยการรักษาความมั่นคงภายในภาค 3 ส่วนแยก 2', url: '#', rssUrl: 'https://rss.app/feeds/qmNTJdxnp0bAVAu8.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' }
         ];
 
         // 2. State & Storage
-        let pages = JSON.parse(localStorage.getItem('cmNewsPagesHTML_v8')) || defaultPages;
-        let readPosts = JSON.parse(localStorage.getItem('cmNewsReadPostsHTML_v8')) || [];
+        let pages = JSON.parse(localStorage.getItem('cmNewsPagesHTML_v9')) || defaultPages;
+        let readPosts = JSON.parse(localStorage.getItem('cmNewsReadPostsHTML_v9')) || [];
+        let fetchLimit = parseInt(localStorage.getItem('cmNewsFetchLimitHTML')) || 10;
         let allFetchedPosts = [];
         let filterType = 'All';
         let searchTerm = '';
         let selectedPageId = null;
         let isLoading = false;
 
-        function savePages() { localStorage.setItem('cmNewsPagesHTML_v8', JSON.stringify(pages)); }
-        function saveReadPosts() { localStorage.setItem('cmNewsReadPostsHTML_v8', JSON.stringify(readPosts)); }
+        function savePages() { localStorage.setItem('cmNewsPagesHTML_v9', JSON.stringify(pages)); }
+        function saveReadPosts() { localStorage.setItem('cmNewsReadPostsHTML_v9', JSON.stringify(readPosts)); }
 
         // ล้างความจำเก่าทิ้งทั้งหมด
         localStorage.removeItem('cmNewsPagesHTML');
@@ -174,6 +181,8 @@
         localStorage.removeItem('cmNewsReadPostsHTML_v6');
         localStorage.removeItem('cmNewsPagesHTML_v7');
         localStorage.removeItem('cmNewsReadPostsHTML_v7');
+        localStorage.removeItem('cmNewsPagesHTML_v8');
+        localStorage.removeItem('cmNewsReadPostsHTML_v8');
 
         // 3. UI Rendering
         function renderFilters() {
@@ -325,7 +334,7 @@
                 const items = Array.from(xmlDoc.querySelectorAll("item"));
                 if (items.length === 0) return null;
 
-                return items.slice(0, 10).map(item => {
+                return items.slice(0, fetchLimit).map(item => {
                     const title = item.querySelector("title")?.textContent || "";
                     const link = item.querySelector("link")?.textContent || page.url;
                     const description = item.querySelector("description")?.textContent || "";
@@ -374,7 +383,7 @@
                     const data = await res.json();
                     
                     if (data.status === 'ok' && data.items && data.items.length > 0) {
-                        return data.items.slice(0, 10).map(item => {
+                        return data.items.slice(0, fetchLimit).map(item => {
                             const parsedDate = item.pubDate ? new Date(item.pubDate) : new Date();
                             const displayTime = parsedDate.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' น.';
 
@@ -451,6 +460,12 @@
         }
 
         // 5. Interactions
+        function changeFetchLimit(value) {
+            fetchLimit = parseInt(value);
+            localStorage.setItem('cmNewsFetchLimitHTML', fetchLimit);
+            fetchNewsData(); // ดึงข้อมูลใหม่ตามจำนวนที่เลือก
+        }
+
         function setFilter(type) {
             filterType = type;
             selectedPageId = null;
@@ -492,7 +507,7 @@
         }
 
         function resetToDefault() {
-            if(window.confirm('คุณต้องการล้างข้อมูลเพจทั้งหมดที่เพิ่มเอง และกลับไปใช้ 18 เพจเริ่มต้นใช่หรือไม่?')) {
+            if(window.confirm('คุณต้องการล้างข้อมูลเพจทั้งหมดที่เพิ่มเอง และกลับไปใช้ 20 เพจเริ่มต้นใช่หรือไม่?')) {
                 pages = [...defaultPages];
                 savePages();
                 renderSidebar();
@@ -534,6 +549,7 @@
 
         // Initial Render
         document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('fetchLimitSelect').value = fetchLimit;
             renderFilters();
             renderSidebar();
             fetchNewsData();
