@@ -139,29 +139,41 @@
             { id: '11', name: 'กลุ่มงานจราจร เชียงใหม่', url: 'https://www.facebook.com/tpdchiangmai221', rssUrl: 'https://rss.app/feeds/yxTX1YfXaoDAqldY.xml', type: 'Police', color: 'bg-red-100 text-red-700' },
             { id: '12', name: 'กองบิน 41 เชียงใหม่', url: 'https://www.facebook.com/Wing41', rssUrl: 'https://rss.app/feeds/akPMfJtCeBXla8Ik.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
             { id: '13', name: 'ตม. เชียงใหม่', url: 'https://www.facebook.com/ChiangmaiImmigration', rssUrl: 'https://rss.app/feeds/Nrkkg0BODlkm6IZE.xml', type: 'Police', color: 'bg-red-100 text-red-700' },
-            { id: '14', name: 'สภ.เมืองเชียงใหม่', url: 'https://www.facebook.com/MuangChiangmaiPolice', rssUrl: 'https://rss.app/feeds/tMAdWYbsDeD8jdZq.xml', type: 'Police', color: 'bg-red-100 text-red-700' },
+            { id: '14', name: 'สถานีตำรวจภูธรเมืองเชียงใหม่', url: 'https://www.facebook.com/MuangChiangmaiPolice', rssUrl: 'https://rss.app/feeds/N1YpMEAre776REFb.xml', type: 'Police', color: 'bg-red-100 text-red-700' },
             { id: '15', name: 'ศูนย์อุตุนิยมวิทยาภาคเหนือ', url: 'https://www.facebook.com/NorthernMeteorologicalCenter', rssUrl: 'https://rss.app/feeds/esEH5XNvkhQrLaBV.xml', type: 'PR', color: 'bg-green-100 text-green-700' },
             { id: '16', name: 'ปภ. เชียงใหม่', url: 'https://www.facebook.com/DDPMChiangmai', rssUrl: 'https://rss.app/feeds/g6iKtFW8PH3UvRgm.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
-            { id: '17', name: 'ท่าอากาศยานเชียงใหม่', url: 'https://www.facebook.com/ChiangmaiAirport', rssUrl: 'https://rss.app/feeds/fUY6EBMuwWUfXNel.xml', type: 'PR', color: 'bg-green-100 text-green-700' }
+            { id: '17', name: 'ท่าอากาศยานเชียงใหม่', url: 'https://www.facebook.com/ChiangmaiAirport', rssUrl: 'https://rss.app/feeds/fUY6EBMuwWUfXNel.xml', type: 'PR', color: 'bg-green-100 text-green-700' },
+            { id: '18', name: 'ศูนย์ชั่งตวงวัดภาคเหนือ', url: '#', rssUrl: 'https://rss.app/feeds/z9RxEAmev0wyphOx.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
+            { id: '19', name: 'สถานีตำรวจภูธรแม่ปิง จังหวัดเชียงใหม่', url: '#', rssUrl: 'https://rss.app/feeds/wVRjca9Wit8AaUvu.xml', type: 'Police', color: 'bg-red-100 text-red-700' }
         ];
 
         // 2. State & Storage
-        let pages = JSON.parse(localStorage.getItem('cmNewsPagesHTML_v3')) || defaultPages;
-        let readPosts = JSON.parse(localStorage.getItem('cmNewsReadPostsHTML_v3')) || [];
+        let pages = JSON.parse(localStorage.getItem('cmNewsPagesHTML_v8')) || defaultPages;
+        let readPosts = JSON.parse(localStorage.getItem('cmNewsReadPostsHTML_v8')) || [];
         let allFetchedPosts = [];
         let filterType = 'All';
         let searchTerm = '';
         let selectedPageId = null;
         let isLoading = false;
 
-        function savePages() { localStorage.setItem('cmNewsPagesHTML_v3', JSON.stringify(pages)); }
-        function saveReadPosts() { localStorage.setItem('cmNewsReadPostsHTML_v3', JSON.stringify(readPosts)); }
+        function savePages() { localStorage.setItem('cmNewsPagesHTML_v8', JSON.stringify(pages)); }
+        function saveReadPosts() { localStorage.setItem('cmNewsReadPostsHTML_v8', JSON.stringify(readPosts)); }
 
-        // ล้างความจำเก่าที่จับคู่ผิดทิ้ง
+        // ล้างความจำเก่าทิ้งทั้งหมด
         localStorage.removeItem('cmNewsPagesHTML');
         localStorage.removeItem('cmNewsReadPostsHTML');
         localStorage.removeItem('cmNewsPagesHTML_v2');
         localStorage.removeItem('cmNewsReadPostsHTML_v2');
+        localStorage.removeItem('cmNewsPagesHTML_v3');
+        localStorage.removeItem('cmNewsReadPostsHTML_v3');
+        localStorage.removeItem('cmNewsPagesHTML_v4');
+        localStorage.removeItem('cmNewsReadPostsHTML_v4');
+        localStorage.removeItem('cmNewsPagesHTML_v5');
+        localStorage.removeItem('cmNewsReadPostsHTML_v5');
+        localStorage.removeItem('cmNewsPagesHTML_v6');
+        localStorage.removeItem('cmNewsReadPostsHTML_v6');
+        localStorage.removeItem('cmNewsPagesHTML_v7');
+        localStorage.removeItem('cmNewsReadPostsHTML_v7');
 
         // 3. UI Rendering
         function renderFilters() {
@@ -480,7 +492,7 @@
         }
 
         function resetToDefault() {
-            if(window.confirm('คุณต้องการล้างข้อมูลเพจทั้งหมดที่เพิ่มเอง และกลับไปใช้ 17 เพจเริ่มต้นใช่หรือไม่?')) {
+            if(window.confirm('คุณต้องการล้างข้อมูลเพจทั้งหมดที่เพิ่มเอง และกลับไปใช้ 18 เพจเริ่มต้นใช่หรือไม่?')) {
                 pages = [...defaultPages];
                 savePages();
                 renderSidebar();
