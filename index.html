@@ -49,7 +49,7 @@
                 </button>
             </div>
         </div>
-        <!-- แถบ Progress Bar (เพิ่มใหม่) -->
+        <!-- แถบ Progress Bar -->
         <div id="progressBarContainer" class="hidden absolute bottom-0 left-0 w-full h-1 bg-slate-100 overflow-hidden">
             <div id="progressBar" class="h-full bg-emerald-500 transition-all duration-300 w-0"></div>
         </div>
@@ -60,7 +60,6 @@
         
         <!-- Sidebar -->
         <aside class="lg:col-span-3 space-y-4">
-            <!-- ปรับให้มือถือมีความสูงจำกัด เลื่อนดูได้ไม่ล้นจอ -->
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col relative lg:sticky lg:top-24 h-[35vh] lg:h-auto lg:max-h-[calc(100vh-6rem)] overflow-hidden">
                 <div class="p-3 sm:p-4 border-b border-slate-100 space-y-3 shrink-0">
                     <div class="relative">
@@ -86,7 +85,6 @@
 
         <!-- Feed -->
         <main class="lg:col-span-9 space-y-4 sm:space-y-6">
-            <!-- ปรับให้เว้นระยะห่างบนมือถือน้อยลง -->
             <div id="postsGrid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                 <!-- Posts Rendered Here -->
             </div>
@@ -135,48 +133,54 @@
 
     <!-- Application Logic -->
     <script>
-        // 1. ข้อมูลตั้งต้น
+        // 1. ข้อมูลตั้งต้น (อัปเดตชื่อและลิงก์ให้ตรงกับรูปภาพ rss.app เป๊ะๆ)
         const defaultPages = [
-            { id: '1', name: 'ตำรวจภูธรภาค 5', url: 'https://www.facebook.com/Police5Thailand/', rssUrl: 'https://rss.app/feeds/9NDB0gVuPGMQkXUF.xml', type: 'Police', color: 'bg-red-100 text-red-700' },
+            // อัปเดตลิงก์ตำรวจภูธรภาค 5 ใหม่เรียบร้อยแล้วครับ
+            { id: '1', name: 'ตำรวจภูธรภาค 5', url: 'https://www.facebook.com/Police5Thailand/', rssUrl: 'https://rss.app/feeds/7QcxeY3w0trDdzDu.xml', type: 'Police', color: 'bg-red-100 text-red-700' },
             { id: '2', name: 'เทศบาลนครเชียงใหม่', url: 'https://www.facebook.com/cmmayor', rssUrl: 'https://rss.app/feeds/BDsDerwS4BhL0ExL.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
-            { id: '3', name: 'ประชาสัมพันธ์เชียงใหม่', url: 'https://www.facebook.com/chiangmaipr', rssUrl: 'https://rss.app/feeds/ZqCJu7HKiR7jas3R.xml', type: 'PR', color: 'bg-green-100 text-green-700' },
+            { id: '3', name: 'PR Chiangmai', url: 'https://www.facebook.com/chiangmaipr', rssUrl: 'https://rss.app/feeds/ZqCJu7HKiR7jas3R.xml', type: 'PR', color: 'bg-green-100 text-green-700' },
             { id: '4', name: 'คณะแพทยศาสตร์ มช.', url: 'https://www.facebook.com/medcmuth', rssUrl: 'https://rss.app/feeds/INGRSaq39enCJvxF.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
-            { id: '5', name: 'สวท.เชียงใหม่', url: 'https://www.facebook.com/chiangmairadiothailand', rssUrl: 'https://rss.app/feeds/3N0vcMBX7RGIF4Zg.xml', type: 'PR', color: 'bg-green-100 text-green-700' },
-            { id: '6', name: 'อบจ.เชียงใหม่', url: 'https://www.facebook.com/cmpao888', rssUrl: 'https://rss.app/feeds/e9pwhxM6rcb1rIjO.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
-            { id: '7', name: 'สปข. 3 เชียงใหม่', url: 'https://www.facebook.com/PRDChiangMai', rssUrl: 'https://rss.app/feeds/MlZ6fjDnqWBBk70A.xml', type: 'PR', color: 'bg-green-100 text-green-700' },
-            { id: '8', name: 'สำนักศิลปากรที่ 7', url: 'https://www.facebook.com/finearts7chiangmai', rssUrl: 'https://rss.app/feeds/VzDXL8wh9CF1NIQD.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
+            { id: '5', name: 'สวท.เชียงใหม่ PRD.', url: 'https://www.facebook.com/chiangmairadiothailand', rssUrl: 'https://rss.app/feeds/3N0vcMBX7RGIF4Zg.xml', type: 'PR', color: 'bg-green-100 text-green-700' },
+            { id: '6', name: 'องค์การบริหารส่วนจังหวัดเชียงใหม่', url: 'https://www.facebook.com/cmpao888', rssUrl: 'https://rss.app/feeds/e9pwhxM6rcb1rIjO.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
+            { id: '7', name: 'สำนักงานประชาสัมพันธ์จังหวัดเชียงใหม่', url: 'https://www.facebook.com/PRDChiangMai', rssUrl: 'https://rss.app/feeds/MlZ6fjDnqWBBk70A.xml', type: 'PR', color: 'bg-green-100 text-green-700' },
+            { id: '8', name: 'สำนักศิลปากรที่ ๗ เชียงใหม่', url: 'https://www.facebook.com/finearts7chiangmai', rssUrl: 'https://rss.app/feeds/VzDXL8wh9CF1NIQD.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
             { id: '9', name: 'ศูนย์ประชาสัมพันธ์ร่วมเชียงใหม่', url: 'https://www.facebook.com/JICChiangMai', rssUrl: 'https://rss.app/feeds/HMSaKJsoJQDZTVEY.xml', type: 'PR', color: 'bg-green-100 text-green-700' },
-            { id: '10', name: 'สำนักงานขนส่งเชียงใหม่', url: 'https://www.facebook.com/profile.php?id=100064666933216', rssUrl: 'https://rss.app/feeds/XbBpNpdy2abueUo0.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
-            { id: '11', name: 'กลุ่มงานจราจร เชียงใหม่', url: 'https://www.facebook.com/tpdchiangmai221', rssUrl: 'https://rss.app/feeds/yxTX1YfXaoDAqldY.xml', type: 'Police', color: 'bg-red-100 text-red-700' },
-            { id: '12', name: 'กองบิน 41 เชียงใหม่', url: 'https://www.facebook.com/Wing41', rssUrl: 'https://rss.app/feeds/akPMfJtCeBXla8Ik.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
-            { id: '13', name: 'ตม. เชียงใหม่', url: 'https://www.facebook.com/ChiangmaiImmigration', rssUrl: 'https://rss.app/feeds/Nrkkg0BODlkm6IZE.xml', type: 'Police', color: 'bg-red-100 text-red-700' },
-            { id: '14', name: 'สถานีตำรวจภูธรเมืองเชียงใหม่', url: 'https://www.facebook.com/MuangChiangmaiPolice', rssUrl: 'https://rss.app/feeds/N1YpMEAre776REFb.xml', type: 'Police', color: 'bg-red-100 text-red-700' },
-            { id: '15', name: 'ศูนย์อุตุนิยมวิทยาภาคเหนือ', url: 'https://www.facebook.com/NorthernMeteorologicalCenter', rssUrl: 'https://rss.app/feeds/esEH5XNvkhQrLaBV.xml', type: 'PR', color: 'bg-green-100 text-green-700' },
-            { id: '16', name: 'ปภ. เชียงใหม่', url: 'https://www.facebook.com/DDPMChiangmai', rssUrl: 'https://rss.app/feeds/g6iKtFW8PH3UvRgm.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
-            { id: '17', name: 'ท่าอากาศยานเชียงใหม่', url: 'https://www.facebook.com/ChiangmaiAirport', rssUrl: 'https://rss.app/feeds/fUY6EBMuwWUfXNel.xml', type: 'PR', color: 'bg-green-100 text-green-700' },
-            { id: '18', name: 'ศูนย์ชั่งตวงวัดภาคเหนือ', url: '#', rssUrl: 'https://rss.app/feeds/z9RxEAmev0wyphOx.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
-            { id: '19', name: 'สถานีตำรวจภูธรแม่ปิง จังหวัดเชียงใหม่', url: '#', rssUrl: 'https://rss.app/feeds/wVRjca9Wit8AaUvu.xml', type: 'Police', color: 'bg-red-100 text-red-700' },
-            { id: '20', name: 'กองกำลังผาเมือง/กองอำนวยการรักษาความมั่นคงภายในภาค 3 ส่วนแยก 2', url: '#', rssUrl: 'https://rss.app/feeds/qmNTJdxnp0bAVAu8.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' }
+            // สลับกลับมาเป็นสิ่งแวดล้อมให้ตรงกับ ID ในรูปของคุณ
+            { id: '10', name: 'สำนักงานสิ่งแวดล้อมและควบคุมมลพิษที่ 1', url: 'https://www.facebook.com/profile.php?id=100064666933216', rssUrl: 'https://rss.app/feeds/XbBpNpdy2abueUo0.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
+            // เปลี่ยนชื่อให้ตรงกับในรูป
+            { id: '11', name: 'ตำรวจท่องเที่ยวเชียงใหม่', url: 'https://www.facebook.com/tpdchiangmai221', rssUrl: 'https://rss.app/feeds/yxTX1YfXaoDAqldY.xml', type: 'Police', color: 'bg-red-100 text-red-700' },
+            { id: '12', name: 'กองบิน 41 เพื่อประชาชน', url: 'https://www.facebook.com/wing41royalthaiairforce', rssUrl: 'https://rss.app/feeds/akPMfJtCeBXla8Ik.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
+            { id: '13', name: 'ตม. เชียงใหม่ (Immigration)', url: 'https://www.facebook.com/immchiangmai', rssUrl: 'https://rss.app/feeds/Nrkkg0BODlkm6IZE.xml', type: 'Police', color: 'bg-red-100 text-red-700' },
+            { id: '14', name: 'สถานีตำรวจภูธรเมืองเชียงใหม่', url: 'https://www.facebook.com/muangchiangmaipolice', rssUrl: 'https://rss.app/feeds/N1YpMEAre776REFb.xml', type: 'Police', color: 'bg-red-100 text-red-700' },
+            { id: '15', name: 'ศูนย์อุตุนิยมวิทยาภาคเหนือ', url: 'https://www.facebook.com/NorthCmmet', rssUrl: 'https://rss.app/feeds/esEH5XNvkhQrLaBV.xml', type: 'PR', color: 'bg-green-100 text-green-700' },
+            { id: '16', name: 'สนง.ป้องกันและบรรเทาสาธารณภัย ชม.', url: 'https://www.facebook.com/cmdisaster', rssUrl: 'https://rss.app/feeds/g6iKtFW8PH3UvRgm.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
+            { id: '17', name: 'ท่าอากาศยานเชียงใหม่ (CNX)', url: 'https://www.facebook.com/chiangmaiairport', rssUrl: 'https://rss.app/feeds/fUY6EBMuwWUfXNel.xml', type: 'PR', color: 'bg-green-100 text-green-700' },
+            { id: '18', name: 'ศูนย์ชั่งตวงวัดภาคเหนือ', url: 'https://www.facebook.com/NWMC.THAI', rssUrl: 'https://rss.app/feeds/z9RxEAmev0wyphOx.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' },
+            { id: '19', name: 'สถานีตำรวจภูธรแม่ปิง', url: 'https://www.facebook.com/maepingpolice', rssUrl: 'https://rss.app/feeds/wVRjca9Wit8AaUvu.xml', type: 'Police', color: 'bg-red-100 text-red-700' },
+            { id: '20', name: 'กองกำลังผาเมือง/กอ.รมน. ภาค 3', url: 'https://www.facebook.com/profile.php?id=100068648581836', rssUrl: 'https://rss.app/feeds/qmNTJdxnp0bAVAu8.xml', type: 'Government', color: 'bg-blue-100 text-blue-700' }
         ];
 
-        // 2. State & Storage (อัปเดตเป็น v11 เสริมความเสถียร)
-        let pages = JSON.parse(localStorage.getItem('cmNewsPagesHTML_v11')) || defaultPages;
-        let readPosts = JSON.parse(localStorage.getItem('cmNewsReadPostsHTML_v11')) || [];
+        // 2. State & Storage (อัปเดตเป็น v13 เพื่อรับค่าลิงก์ใหม่ของตำรวจภาค 5)
+        let pages = JSON.parse(localStorage.getItem('cmNewsPagesHTML_v13')) || defaultPages;
+        let readPosts = JSON.parse(localStorage.getItem('cmNewsReadPostsHTML_v13')) || [];
         let fetchLimit = parseInt(localStorage.getItem('cmNewsFetchLimitHTML')) || 10;
-        let cachedFeeds = JSON.parse(localStorage.getItem('cmNewsCachedFeedsHTML_v11')) || {}; 
+        let cachedFeeds = JSON.parse(localStorage.getItem('cmNewsCachedFeedsHTML_v13')) || {}; 
         let allFetchedPosts = [];
         let filterType = 'All';
         let searchTerm = '';
         let selectedPageId = null;
         let isLoading = false;
 
-        function savePages() { localStorage.setItem('cmNewsPagesHTML_v11', JSON.stringify(pages)); }
-        function saveReadPosts() { localStorage.setItem('cmNewsReadPostsHTML_v11', JSON.stringify(readPosts)); }
+        function savePages() { localStorage.setItem('cmNewsPagesHTML_v13', JSON.stringify(pages)); }
+        function saveReadPosts() { localStorage.setItem('cmNewsReadPostsHTML_v13', JSON.stringify(readPosts)); }
 
-        // ล้างความจำเก่า
-        localStorage.removeItem('cmNewsPagesHTML_v10');
-        localStorage.removeItem('cmNewsReadPostsHTML_v10');
-        localStorage.removeItem('cmNewsCachedFeedsHTML_v10');
+        // ล้างความจำเก่าทั้งหมด
+        localStorage.removeItem('cmNewsPagesHTML_v11');
+        localStorage.removeItem('cmNewsReadPostsHTML_v11');
+        localStorage.removeItem('cmNewsCachedFeedsHTML_v11');
+        localStorage.removeItem('cmNewsPagesHTML_v12');
+        localStorage.removeItem('cmNewsReadPostsHTML_v12');
+        localStorage.removeItem('cmNewsCachedFeedsHTML_v12');
 
         // 3. UI Rendering
         function getTimeAgo(timestamp) {
@@ -266,13 +270,11 @@
                 }
             }
 
-            // ซ่อนสถานะว่างเปล่าและโหลดไว้ก่อน
             emptyState.classList.add('hidden');
             emptyState.style.display = 'none';
             loadingState.classList.add('hidden');
             loadingState.style.display = 'none';
 
-            // ตรวจสอบว่ามีข่าวให้แสดงผลหรือไม่
             if (displayPosts.length === 0) {
                 container.innerHTML = '';
                 if (isLoading) {
@@ -349,7 +351,6 @@
             lucide.createIcons();
         }
 
-        // --- แก้ไขการตัดขาดของฟังก์ชัน processPosts ในโค้ดก่อนหน้าให้สมบูรณ์ ---
         function processPosts(rawPosts) {
             const mergedPostsMap = new Map();
             rawPosts.forEach(post => {
@@ -375,28 +376,24 @@
             renderPosts();
         }
 
-        // 4. Data Fetching
         function parseXmlItems(xmlText, page) {
             try {
                 const parser = new DOMParser();
                 const xmlDoc = parser.parseFromString(xmlText, "text/xml");
                 if (xmlDoc.querySelector("parsererror")) return null;
 
-                // รองรับทั้ง tag <item> (RSS) และ <entry> (Atom) เผื่อเว็บสลับฟอร์แมต
                 const items = Array.from(xmlDoc.querySelectorAll("item, entry"));
                 if (items.length === 0) return null;
 
                 return items.slice(0, fetchLimit).map(item => {
                     const title = item.querySelector("title")?.textContent || "";
                     
-                    // ดึงลิงก์รองรับทั้ง RSS และ Atom
                     let link = item.querySelector("link")?.textContent;
                     if (!link && item.querySelector("link[href]")) {
                         link = item.querySelector("link").getAttribute("href");
                     }
                     link = link || page.url;
                     
-                    // ดึงเนื้อหาแบบครอบคลุมทั้ง description, content:encoded และ summary
                     let description = item.querySelector("description")?.textContent || item.querySelector("summary")?.textContent || "";
                     const contentEncoded = item.getElementsByTagNameNS("*", "encoded")?.[0]?.textContent || item.querySelector("content")?.textContent;
                     if (contentEncoded) description = contentEncoded;
@@ -430,7 +427,6 @@
             } catch(e) { return null; }
         }
 
-        // --- เริ่มต้นโค้ด fetchNewsData ที่อัปเดตใหม่ เพื่อแก้บั๊กการโหลดค้าง ---
         async function fetchNewsData() {
             isLoading = true;
             
@@ -444,7 +440,6 @@
             document.getElementById('refreshIcon').classList.add('animate-spin');
             document.getElementById('refreshText').innerText = 'กำลังเริ่ม...';
             
-            // แสดงแถบโหลดข้อมูล
             document.getElementById('progressBarContainer').classList.remove('hidden');
             document.getElementById('progressBar').style.width = '0%';
 
@@ -464,22 +459,17 @@
             }
 
             const batchSize = 3; 
-            let completedCount = 0; // เพิ่มตัวนับจำนวนโหลดเพื่อคำนวณ %
-
-            // ทริคหลบ Proxy Cache: สร้างเลขตัวแทน "รายชั่วโมง" เพื่อบังคับให้ Proxy ดึงข้อมูลใหม่จาก rss.app ทุกๆ 1 ชม.
-            // (ช่วยแก้ปัญหาลิงก์เข้าตรงๆ ได้ แต่ระบบดึงไม่มาเพราะ Proxy จำหน้าว่างเปล่าไว้)
+            let completedCount = 0; 
             const hourCacheBuster = Math.floor(Date.now() / 3600000);
 
             const processPage = async (page) => {
                 try {
                     if (!page.rssUrl || page.rssUrl === '#') return;
                     
-                    // แปะรหัสรายชั่วโมงไปที่ URL เพื่อให้ Proxy รู้ว่าเป็นคำขอใหม่
                     const refreshUrl = page.rssUrl + (page.rssUrl.includes('?') ? '&' : '?') + 'h=' + hourCacheBuster;
                     const targetUrl = encodeURIComponent(refreshUrl);
                     let parsedItems = null;
 
-                    // 1. ลองดึงผ่าน RSS2JSON ก่อน
                     try {
                         const r2jRes = await fetchWithTimeout(`https://api.rss2json.com/v1/api.json?rss_url=${targetUrl}`, 6000);
                         if (r2jRes.ok) {
@@ -510,7 +500,6 @@
                         }
                     } catch (e) {}
 
-                    // 2. ถ้า RSS2JSON ดึงไม่ได้ ให้ใช้ตัวแปลงสำรอง
                     if (!parsedItems || parsedItems.length === 0) {
                         const fallbacks = [
                             `https://api.allorigins.win/get?url=${targetUrl}`,
@@ -535,17 +524,14 @@
                         }
                     }
 
-                    // 3. ถ้าดึงสำเร็จ อัปเดตข้อมูลขึ้นจอ
                     if (parsedItems && parsedItems.length > 0) {
                         cachedFeeds[page.id] = parsedItems;
-                        localStorage.setItem('cmNewsCachedFeedsHTML_v11', JSON.stringify(cachedFeeds));
+                        localStorage.setItem('cmNewsCachedFeedsHTML_v12', JSON.stringify(cachedFeeds));
                         processPosts(Object.values(cachedFeeds).flat());
                         renderSidebar();
                     }
                 } catch (error) {
-                    // ปล่อยผ่าน
                 } finally {
-                    // อัปเดต % เมื่อโหลดเสร็จแต่ละเพจ
                     completedCount++;
                     const percent = Math.round((completedCount / pages.length) * 100);
                     document.getElementById('progressBar').style.width = percent + '%';
@@ -553,20 +539,17 @@
                 }
             };
 
-            // ประมวลผลเป็นชุด
             try {
                 for (let i = 0; i < pages.length; i += batchSize) {
                     const batch = pages.slice(i, i + batchSize);
                     await Promise.all(batch.map(page => processPage(page)));
                     if (i + batchSize < pages.length) {
-                        await delay(1500); // พัก 1.5 วินาที
+                        await delay(1500); 
                     }
                 }
             } finally {
-                // บังคับคืนค่าเพื่อป้องกันหน้าจอค้างเด็ดขาด
                 isLoading = false;
                 
-                // หน่วงเวลา 0.8 วินาทีให้ผู้ใช้เห็นว่าโหลดถึง 100% แล้วค่อยซ่อน
                 setTimeout(() => {
                     document.getElementById('refreshIcon').classList.remove('animate-spin');
                     document.getElementById('refreshText').innerText = 'รีเฟรช';
@@ -578,9 +561,7 @@
                 renderSidebar();
             }
         }
-        // --- สิ้นสุดการแก้ไข fetchNewsData ---
 
-        // 5. Interactions
         function changeFetchLimit(value) {
             fetchLimit = parseInt(value);
             localStorage.setItem('cmNewsFetchLimitHTML', fetchLimit);
@@ -636,7 +617,6 @@
             }
         }
 
-        // 6. Modal Functions
         function openAddModal() {
             document.getElementById('addModal').classList.remove('hidden');
             document.getElementById('addModal').classList.add('flex');
@@ -668,7 +648,6 @@
             }
         }
 
-        // Initial Render
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('fetchLimitSelect').value = fetchLimit;
             renderFilters();
